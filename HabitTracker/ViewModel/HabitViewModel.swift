@@ -6,13 +6,46 @@
 //
 
 import SwiftUI
+import CoreData
 
-struct HabitViewModel: View {
-    var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+class HabitViewModel: ObservableObject {
+    // MARK: Свойства новой привычки
+    @Published var addNewHabit: Bool = false
+    
+    @Published var title: String = ""
+    @Published var habitColor: String = "Card-1"
+    @Published var weekDays: [String] = []
+    @Published var isRemainderOn: Bool = false
+    @Published var remainderText: String = ""
+    @Published var remainderDate: Date = Date()
+    
+    // MARK: Выбор времени напоминания
+    @Published var showTimePicker: Bool = false
+    
+    // MARK: Добавление привычки в базу данных
+    func addHabit(context: NSManagedObjectContext)->Bool{
+
+        return false
+    }
+    
+    // MARK: Стирание контента
+    func resetData(){
+         title = ""
+        habitColor = "Card-1"
+        weekDays = []
+        isRemainderOn = false
+        remainderDate = Date()
+        remainderText = ""
+    }
+    
+    // MARK: Статус кнопки готово
+    func doneStatus()->Bool{
+        let remainderStatus = isRemainderOn ? remainderText == "" : false
+        
+        if title == "" || weekDays.isEmpty || remainderStatus{
+            return false
+        }
+        return true
     }
 }
 
-#Preview {
-    HabitViewModel()
-}

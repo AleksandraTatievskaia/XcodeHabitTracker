@@ -187,11 +187,12 @@
 				};
 			};
 			buildConfigurationList = 88BECDED2D97F87500022AAF /* Build configuration list for PBXProject "HabitTracker" */;
-			developmentRegion = en;
+			developmentRegion = ru;
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
 				Base,
+				ru,
 			);
 			mainGroup = 88BECDE92D97F87500022AAF;
 			minimizedProjectReferenceProxies = 1;
