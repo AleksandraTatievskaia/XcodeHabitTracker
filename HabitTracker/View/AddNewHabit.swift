@@ -78,6 +78,8 @@ struct AddNewHabit: View {
                 Divider()
                     .padding(.vertical,10)
                 
+                // Прячем если доступ к уведомлениям был отклонен пользователем
+                
                 HStack {
                     VStack(alignment: .leading, spacing: 6) {
                         Text("Напоминания")
@@ -92,6 +94,7 @@ struct AddNewHabit: View {
                     Toggle(isOn: $habitModel.isRemainderOn) {}
                         .labelsHidden()
                 }
+                .opacity(habitModel.notificationAccess ? 1 : 0)
                 
                 HStack(spacing: 12) {
                     Label {
@@ -117,12 +120,13 @@ struct AddNewHabit: View {
                 }
                 .frame(height: habitModel.isRemainderOn ? nil : 0)
                 .opacity(habitModel.isRemainderOn ? 1 : 0)
+                .opacity(habitModel.notificationAccess ? 1 : 0)
             }
             .animation(.easeInOut, value: habitModel.isRemainderOn)
             .frame(maxHeight: .infinity, alignment: .top)
             .padding()
             .navigationBarTitleDisplayMode(.inline)
-            .navigationTitle("Добавить привычку")
+            .navigationTitle(habitModel.editHabit != nil ? "Редактировать привычку" : "Добавить привычку")
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button {
@@ -131,14 +135,31 @@ struct AddNewHabit: View {
                         Image(systemName: "xmark.circle")
                     }
                     .tint(.black)
-                    .disabled(!habitModel.doneStatus())
-                    .opacity(habitModel.doneStatus() ? 1 : 0 )
+//                    .disabled(!habitModel.doneStatus())
+//                    .opacity(habitModel.doneStatus() ? 1 : 0 )
+                }
+                
+                // MARK: Кнопка удаления
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button {
+                        if habitModel.deleteHabit(context: env.managedObjectContext)
+                        {
+                            env.dismiss()
+                        }
+                    } label: {
+                        Image(systemName: "trash")
+                    }
+                    .tint(.red)
+                    .opacity(habitModel.editHabit == nil ? 0 : 1)
                 }
                 
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Готово") {
-                        if habitModel.addHabit(context: env.managedObjectContext){
-                            env.dismiss()
+                        Task{
+                            if await habitModel.addHabit(context:
+                                env.managedObjectContext){
+                                env.dismiss()
+                            }
                         }
                     }
                     .tint(.black)
