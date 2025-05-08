@@ -89,7 +89,18 @@ class HabitViewModel: ObservableObject {
         // Запланированные Ids
         var notificationIDs: [String] = []
         let calendar = Calendar.current
-        let weekdaySymbols: [String] = calendar.weekdaySymbols
+//        let weekdaySymbols: [String] = calendar.weekdaySymbols
+        // Заменяем русские короткие дни -> на номер дня недели
+        // в системе Apple 1 - воскресенье, 7 - суббота
+        let dayMapping: [String: Int] = [
+            "вс": 1,
+            "пн": 2,
+            "вт": 3,
+            "ср": 4,
+            "чт": 5,
+            "пт": 6,
+            "сб": 7
+        ]
         
         // MARK: Планирование уведомления
         for weekDay in weekDays {
@@ -97,27 +108,24 @@ class HabitViewModel: ObservableObject {
             let id = UUID().uuidString
             let hour = calendar.component(.hour, from: remainderDate)
             let min = calendar.component(.minute, from: remainderDate)
-            let day = weekdaySymbols.firstIndex{ currentDay in
-                return currentDay == weekDay
-            } ?? -1
-            // MARK: Так как день недели начинается с 1-7
-            // Поэтому добавляем к индексу +1
-            if day != -1{
-                var components = DateComponents()
-                components.hour = hour
-                components.minute = min
-                components.weekday = day + 1
-                // MARK: Это вызовет уведомления в каждый выбранный день
-                let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: true)
-                
-                // MARK: Запрос уведомлений
-                let request = UNNotificationRequest(identifier: id, content: content, trigger: trigger)
-                
-                try await UNUserNotificationCenter.current().add(request)
-                
-                // Добавляем ID
-                notificationIDs.append(id)
-            }
+
+            guard let day = dayMapping[weekDay] else { continue }
+            
+            var components = DateComponents()
+            components.hour = hour
+            components.minute = min
+            components.weekday = day
+            
+            // MARK: Это вызовет уведомления в каждый выбранный день
+            let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: true)
+            
+            // MARK: Запрос уведомлений
+            let request = UNNotificationRequest(identifier: id, content: content, trigger: trigger)
+            
+            try await UNUserNotificationCenter.current().add(request)
+            
+            // Добавляем ID
+            notificationIDs.append(id)
             
         }
         

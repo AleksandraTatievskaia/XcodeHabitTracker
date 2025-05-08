@@ -6,10 +6,13 @@
 //
 
 import SwiftUI
+import UIKit
+
 
 struct Settings: View {
     @Environment(\.presentationMode) var presentationMode
     @State private var showThemeSelector = false
+    @State private var showNotificationAlert = false
     @EnvironmentObject var settingsVM: SettingsViewModel
 
     var body: some View {
@@ -36,8 +39,22 @@ struct Settings: View {
 
                 VStack(spacing: 40) {
                     SettingButton(icon: "bell", text: "Уведомления") {
-                        // Пока без действия
+                        showNotificationAlert = true
                     }
+                    .alert(isPresented: $showNotificationAlert) {
+                        Alert(
+                            title: Text("Открыть настройки"),
+                            message: Text("Перейдите в раздел «Уведомления» и включите разрешения для этого приложения."),
+                            primaryButton: .default(Text("Открыть настройки")) {
+                                if let url = URL(string: UIApplication.openSettingsURLString),
+                                   UIApplication.shared.canOpenURL(url) {
+                                    UIApplication.shared.open(url)
+                                }
+                            },
+                            secondaryButton: .cancel(Text("Отмена"))
+                        )
+                    }
+
 
                     SettingButton(icon: "sun.max", text: "Изменить тему") {
                         showThemeSelector.toggle()
