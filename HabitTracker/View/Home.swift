@@ -10,6 +10,8 @@ import SwiftUI
 struct Home: View {
     @FetchRequest(entity: Habit.entity(), sortDescriptors: [NSSortDescriptor(keyPath: \Habit.dateAdded, ascending: false)], predicate: nil, animation: .easeInOut) var habits: FetchedResults<Habit>
     @StateObject var habitModel: HabitViewModel = .init()
+    @State private var showSettings: Bool = false
+    @StateObject var settingsVM = SettingsViewModel()
     
     var body: some View {
         VStack(spacing: 0) {
@@ -29,7 +31,7 @@ struct Home: View {
                         }
                         
                         Button {
-                            // Действие для кнопки-шестерёнки
+                            showSettings.toggle()
                         } label: {
                             Image(systemName: "gearshape")
                                 .font(.title3)
@@ -73,6 +75,12 @@ struct Home: View {
             AddNewHabit()
                 .environmentObject(habitModel)
         }
+        
+        .sheet(isPresented: $showSettings) {
+            Settings()
+                .environmentObject(settingsVM)
+        }
+        
     }
     
     // MARK: Habit Card View

@@ -152,7 +152,7 @@ class HabitViewModel: ObservableObject {
         
     }
     
-    // MARK: Восстановление отредавтированных данных
+    // MARK: Восстановление отредактированных данных
     func restoreEditData(){
         if let editHabit = editHabit {
             title = editHabit.title ?? ""
