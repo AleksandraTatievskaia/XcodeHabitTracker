@@ -181,5 +181,24 @@ class HabitViewModel: ObservableObject {
         }
         return true
     }
+    
+    func pluralizedTimesPerWeek(_ count: Int) -> String {
+        if count == 7 {
+            return "Каждый день"
+        }
+
+        let suffix: String
+        switch count % 10 {
+        case 1 where count % 100 != 11:
+            suffix = "раз"
+        case 2...4 where !(12...14).contains(count % 100):
+            suffix = "раза"
+        default:
+            suffix = "раз"
+        }
+
+        return "\(count) \(suffix) в неделю"
+    }
+
 }
 

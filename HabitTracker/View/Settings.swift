@@ -14,6 +14,7 @@ struct Settings: View {
     @State private var showThemeSelector = false
     @State private var showNotificationAlert = false
     @EnvironmentObject var settingsVM: SettingsViewModel
+    @State private var showHelp = false
 
     var body: some View {
         NavigationView {
@@ -21,6 +22,7 @@ struct Settings: View {
                 Text("Настройки")
                     .font(.title2.bold())
                     .frame(maxWidth: .infinity)
+                    .foregroundColor(settingsVM.isDarkMode ? .white : .black)
                     .overlay(alignment: .trailing) {
                         HStack(spacing: 12) {
                             Button(action: {
@@ -28,7 +30,7 @@ struct Settings: View {
                             }) {
                                 Image(systemName: "xmark.circle")
                                     .font(.title2)
-                                    .foregroundColor(.black)
+                                    .foregroundColor(settingsVM.isDarkMode ? .white : .black)
                                     .padding()
                             }
                             Spacer()
@@ -61,8 +63,12 @@ struct Settings: View {
                     }
 
                     SettingButton(icon: "questionmark.circle", text: "Справка") {
-                        // Пока без действия
+                        showHelp.toggle()
                     }
+                    .sheet(isPresented: $showHelp) {
+                        HelpView()
+                    }
+
                 }
                 .sheet(isPresented: $showThemeSelector) {
                     ThemeView()
@@ -72,7 +78,9 @@ struct Settings: View {
                 Spacer()
             }
             .padding()
+            .background(settingsVM.isDarkMode ? Color.black : Color.white)
         }
+        .preferredColorScheme(settingsVM.isDarkMode ? .dark : .light)
     }
 
     @ViewBuilder
@@ -80,12 +88,17 @@ struct Settings: View {
         Button(action: action) {
             HStack {
                 Image(systemName: icon)
+                    .foregroundColor(settingsVM.isDarkMode ? .white : .black)
                 Text(text)
+                    .padding(.leading, 10)
+                    .foregroundColor(settingsVM.isDarkMode ? .white : .black)
                 Spacer()
             }
             .padding()
-            .background(Color.gray.opacity(0.1))
-            .cornerRadius(12)
+            .background(
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(settingsVM.buttonBackgroundColor)
+            )
             .foregroundColor(.black)
         }
     }
@@ -93,7 +106,25 @@ struct Settings: View {
 
 struct Settings_Previews: PreviewProvider {
     static var previews: some View {
-        Settings()
-            .environmentObject(SettingsViewModel()) 
+        
+        Group {
+            // Превью для светлой темы
+            Settings()
+                .environmentObject(SettingsViewModel())
+                .preferredColorScheme(.light)
+            // Превью для тёмной темы
+            Settings()
+                .environmentObject({
+                    let vm = SettingsViewModel()
+                    vm.isDarkMode = true
+                    return vm
+                }())
+                .preferredColorScheme(.dark)
+            
+            
+        }
+        
+        
+       
     }
 }

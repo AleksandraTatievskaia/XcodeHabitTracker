@@ -204,3 +204,4 @@ struct AddNewHabit_Previews: PreviewProvider {
             .preferredColorScheme(.light)
     }
 }
+

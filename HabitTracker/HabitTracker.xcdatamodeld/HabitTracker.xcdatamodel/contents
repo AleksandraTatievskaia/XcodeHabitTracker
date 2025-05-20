@@ -10,4 +10,7 @@
         <attribute name="title" optional="YES" attributeType="String"/>
         <attribute name="weekDays" optional="YES" attributeType="Transformable" customClassName="[String]"/>
     </entity>
+    <entity name="MotivationCardEntity" representedClassName="MotivationCardEntity" syncable="YES" codeGenerationType="class">
+        <attribute name="imageName" optional="YES" attributeType="Binary" allowsExternalBinaryDataStorage="YES"/>
+    </entity>
 </model>

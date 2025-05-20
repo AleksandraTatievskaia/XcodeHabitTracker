@@ -1,3 +1,10 @@
+//
+//  ThemeView.swift
+//  HabitTracker
+//
+//  Created by Александра Татиевская on 3.05.2025.
+//
+
 import SwiftUI
 
 struct ThemeView: View {
@@ -11,7 +18,7 @@ struct ThemeView: View {
                 Button("Закрыть") {
                     presentationMode.wrappedValue.dismiss()
                 }
-                .foregroundColor(.black)
+                .foregroundColor(.primary)
 
                 Spacer()
 
@@ -21,51 +28,81 @@ struct ThemeView: View {
                     .multilineTextAlignment(.center)
 
                 Spacer()
-                    .frame(width: 60) // Чтобы "Тема" была строго по центру
+                    .frame(width: 60)
             }
             .padding(.horizontal)
             .padding(.top)
 
-           
-
-            // Кнопки выбора темы с отступами и иконками
+            // Кнопки выбора темы
             VStack(spacing: 40) {
-                ThemeButton(icon: "sun.max", text: "Светлая тема") {
+                ThemeButton(
+                    icon: "sun.max",
+                    text: "Светлая тема",
+                    isSelected: !settingsVM.isDarkMode
+                ) {
                     settingsVM.isDarkMode = false
                 }
 
-                ThemeButton(icon: "moon.fill", text: "Тёмная тема") {
+                ThemeButton(
+                    icon: "moon.fill",
+                    text: "Тёмная тема",
+                    isSelected: settingsVM.isDarkMode
+                ) {
                     settingsVM.isDarkMode = true
                 }
             }
-            .padding(.top, 30) // Отступ сверху для кнопок
+            .padding(.top, 30)
 
             Spacer()
         }
+        .id(settingsVM.isDarkMode) // 💡 Добавлено
         .padding()
+        .background(Color(.systemBackground))
+        .preferredColorScheme(settingsVM.isDarkMode ? .dark : .light)
+        
     }
 
     @ViewBuilder
-    func ThemeButton(icon: String, text: String, action: @escaping () -> Void) -> some View {
+    func ThemeButton(icon: String, text: String, isSelected: Bool, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             HStack {
-                Image(systemName: icon) // Иконка перед текстом
-                    .foregroundColor(.black)
+                Image(systemName: icon)
+                    .foregroundColor(settingsVM.isDarkMode ? .white : .black)
                 Text(text)
-                    .padding(.leading, 10) // Отступ слева для текста
+                    .foregroundColor(.primary)
+                    .padding(.leading, 10)
                 Spacer()
+                
+                if isSelected {
+                    Image(systemName: "checkmark")
+                        .foregroundColor(settingsVM.isDarkMode ? .white : .black)
+                }
             }
             .padding()
-            .background(Color.gray.opacity(0.1))
-            .cornerRadius(12)
-            .foregroundColor(.black)
+            .background(
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(settingsVM.buttonBackgroundColor)
+            )
         }
     }
 }
 
-struct Theme_Previews: PreviewProvider {
+struct ThemeView_Previews: PreviewProvider {
     static var previews: some View {
-        ThemeView()
-            .environmentObject(SettingsViewModel())
+        Group {
+            // Превью для светлой темы
+            ThemeView()
+                .environmentObject(SettingsViewModel())
+                .preferredColorScheme(.light)
+            
+            // Превью для тёмной темы
+            ThemeView()
+                .environmentObject({
+                    let vm = SettingsViewModel()
+                    vm.isDarkMode = true
+                    return vm
+                }())
+                .preferredColorScheme(.dark)
+        }
     }
 }

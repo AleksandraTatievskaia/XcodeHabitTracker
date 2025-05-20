@@ -11,7 +11,9 @@ struct Home: View {
     @FetchRequest(entity: Habit.entity(), sortDescriptors: [NSSortDescriptor(keyPath: \Habit.dateAdded, ascending: false)], predicate: nil, animation: .easeInOut) var habits: FetchedResults<Habit>
     @StateObject var habitModel: HabitViewModel = .init()
     @State private var showSettings: Bool = false
-    @StateObject var settingsVM = SettingsViewModel()
+    @EnvironmentObject var settingsVM: SettingsViewModel
+    @State private var showMotivation = false
+    @StateObject var motivationVM = MotivationViewModel()
     
     var body: some View {
         VStack(spacing: 0) {
@@ -21,13 +23,17 @@ struct Home: View {
                 .overlay(alignment: .trailing) {
                     HStack(spacing: 12) {
                         Button {
+                            showMotivation = true // Открыть MotivationView
                             // Действие для кнопки с буквой М
                         } label: {
                             Text("М")
                                 .font(.system(size: 16, weight: .bold))
                                 .foregroundColor(.TFBG)
                                 .frame(width: 28, height: 28)
-                            
+                        }
+                        // NEW
+                        .sheet(isPresented: $showMotivation) {
+                            MotivationView(viewModel: motivationVM)
                         }
                         
                         Button {
@@ -101,7 +107,7 @@ struct Home: View {
                 
                 Spacer()
                 let count = (habit.weekDays?.count ?? 0)
-                Text(count == 7 ? "Каждый день" : "\(count) раза в неделю ")
+                Text(habitModel.pluralizedTimesPerWeek(count))
                     .font(.caption)
                     .foregroundColor(.TFBG)
             }
@@ -135,11 +141,15 @@ struct Home: View {
                             .font(.system(size: 14))
                             .fontWeight(.semibold)
                             .padding(8)
+                            .frame(width: 35, height: 35)  // Размер круга 35x35
                             .background {
                                 Circle()
                                     .fill(Color(habit.color ?? "Card-1"))
                                     .opacity(status ? 1 : 0)
                             }
+                            .foregroundColor(.black)
+                            .multilineTextAlignment(.center)
+
                     }
                     .frame(maxWidth: .infinity)
                 }
@@ -167,6 +177,22 @@ struct Home: View {
 
 struct Home_Previews: PreviewProvider {
     static var previews: some View {
-        ContentView()
+        let settingsVM = SettingsViewModel()
+        
+        return Group {
+            Home()
+                .environmentObject(settingsVM)
+                .environment(\.managedObjectContext, PersistenceController.preview.container.viewContext)
+                .preferredColorScheme(.light)
+            
+            Home()
+                .environmentObject({
+                    let vm = SettingsViewModel()
+                    vm.isDarkMode = true
+                    return vm
+                }())
+                .environment(\.managedObjectContext, PersistenceController.preview.container.viewContext)
+                .preferredColorScheme(.dark)
+        }
     }
 }
