@@ -8,20 +8,23 @@
 import SwiftUI
 
 struct MotivationView: View {
+    @EnvironmentObject var settingsVM: SettingsViewModel
     @ObservedObject var viewModel: MotivationViewModel
     @Environment(\.dismiss) var dismiss
-
+    
+    @State private var showSettings: Bool = false
+    
     var body: some View {
         VStack(spacing: 16) {
             // Заголовок
             VStack(spacing: 4) {
                 Text("Мотивация")
                     .font(.title3.bold())
-                    .foregroundColor(.black)
+                    .foregroundColor(settingsVM.foregroundColor)
 
                 Text("Зарядись мотивацией на день!")
                     .font(.subheadline)
-                    .foregroundColor(.black)
+                    .foregroundColor(settingsVM.foregroundColor)
             }
             .multilineTextAlignment(.center)
             .padding(.top, 70)
@@ -35,7 +38,7 @@ struct MotivationView: View {
                     .clipShape(RoundedRectangle(cornerRadius: 20)) // Обрезка по форме
                     .overlay(
                         RoundedRectangle(cornerRadius: 20)
-                            .stroke(Color.black, lineWidth: 1) // Чёрная рамка
+                            .stroke(settingsVM.iconColor, lineWidth: 1) // Чёрная рамка
                     )
                     .clipped() // Обрезает всё, что выходит за границы
                     .padding()
@@ -50,7 +53,7 @@ struct MotivationView: View {
                             Text("назад")
                         }
                     }
-                    .foregroundColor(.black)
+                    .foregroundColor(settingsVM.iconColor)
 
                     Spacer()
 
@@ -60,12 +63,12 @@ struct MotivationView: View {
                             Text("вперед")
                         }
                     }
-                    .foregroundColor(.black)
+                    .foregroundColor(settingsVM.iconColor)
                 }
                 .padding(.horizontal, 60)
             } else {
                 Text("Нет карточек")
-                    .foregroundColor(.black)
+                    .foregroundColor(settingsVM.foregroundColor)
             }
 
             Spacer()
@@ -75,13 +78,13 @@ struct MotivationView: View {
                 dismiss()
             }) {
                 Text("Закрыть")
-                    .foregroundColor(.black)
+                    .foregroundColor(settingsVM.foregroundColor)
                     .font(.body)
                     .padding()
             }
         }
         .padding(.horizontal)
-        .background(Color.white.ignoresSafeArea())
+        .background(settingsVM.backgroundColor.ignoresSafeArea())
     }
 }
 

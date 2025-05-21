@@ -9,7 +9,10 @@ import SwiftUI
 import Foundation
 
 struct AddNewHabit: View {
+    @EnvironmentObject var settingsVM: SettingsViewModel
     @EnvironmentObject var habitModel: HabitViewModel
+    
+    @State private var showSettings: Bool = false
     // MARK: Переменные окружения
     @Environment(\.self) var env
     var body: some View {
@@ -31,6 +34,7 @@ struct AddNewHabit: View {
                                 if color == habitModel.habitColor{
                                     Image(systemName: "checkmark")
                                         .font(.caption.bold())
+                                        .foregroundColor(settingsVM.iconColor)
                                 }
                             })
                             .onTapGesture {
@@ -135,6 +139,7 @@ struct AddNewHabit: View {
                         Image(systemName: "xmark.circle")
                     }
                     .tint(.black)
+                    .foregroundColor(settingsVM.iconColor)
 //                    .disabled(!habitModel.doneStatus())
 //                    .opacity(habitModel.doneStatus() ? 1 : 0 )
                 }
@@ -163,6 +168,7 @@ struct AddNewHabit: View {
                         }
                     }
                     .tint(.black)
+                    .foregroundColor(settingsVM.iconColor)
                     .disabled(!habitModel.doneStatus())
                     .opacity(habitModel.doneStatus() ? 1 : 0.6)
                 }
@@ -184,10 +190,11 @@ struct AddNewHabit: View {
                         $habitModel.remainderDate,displayedComponents: [.hourAndMinute])
                         .datePickerStyle(.wheel)
                         .labelsHidden()
+                        .colorScheme(settingsVM.isDarkMode ? .dark : .light)
                         .padding()
                         .background{
                             RoundedRectangle(cornerRadius: 10)
-                                .fill(Color("Plain"))
+                                .fill(settingsVM.backgroundColor)
                         }
                         .padding()
                     
@@ -202,6 +209,7 @@ struct AddNewHabit_Previews: PreviewProvider {
         AddNewHabit()
             .environmentObject(HabitViewModel())
             .preferredColorScheme(.light)
+            .environmentObject(SettingsViewModel())
     }
 }
 

@@ -8,10 +8,11 @@
 import SwiftUI
 
 struct Home: View {
+    @EnvironmentObject var settingsVM: SettingsViewModel
+    
     @FetchRequest(entity: Habit.entity(), sortDescriptors: [NSSortDescriptor(keyPath: \Habit.dateAdded, ascending: false)], predicate: nil, animation: .easeInOut) var habits: FetchedResults<Habit>
     @StateObject var habitModel: HabitViewModel = .init()
     @State private var showSettings: Bool = false
-    @EnvironmentObject var settingsVM: SettingsViewModel
     @State private var showMotivation = false
     @StateObject var motivationVM = MotivationViewModel()
     
@@ -20,39 +21,42 @@ struct Home: View {
             Text("Привычки")
                 .font(.title2.bold())
                 .frame(maxWidth: .infinity)
+                .foregroundColor(settingsVM.foregroundColor)
                 .overlay(alignment: .trailing) {
                     HStack(spacing: 12) {
                         Button {
-                            showMotivation = true // Открыть MotivationView
                             // Действие для кнопки с буквой М
+                            showMotivation = true // Открыть MotivationView
                         } label: {
                             Text("М")
                                 .font(.system(size: 16, weight: .bold))
-                                .foregroundColor(.TFBG)
+                                .foregroundColor(settingsVM.iconColor)
                                 .frame(width: 28, height: 28)
+
                         }
-                        // NEW
-                        .sheet(isPresented: $showMotivation) {
+                        .sheet(isPresented: $showMotivation){
                             MotivationView(viewModel: motivationVM)
+                            
                         }
-                        
+
                         Button {
+                            // Действие для кнопки-шестерёнки
                             showSettings.toggle()
                         } label: {
                             Image(systemName: "gearshape")
                                 .font(.title3)
-                                .foregroundColor(.black)
+                                .foregroundColor(settingsVM.iconColor)
                         }
                     }
                     .padding(.bottom, 10)
                 }
-            
+
             // Делаем кнопку добавления по центру, когда привычек нет
             ScrollView(habits.isEmpty ? .init() : .vertical, showsIndicators: false) {
                 VStack(spacing: 15){
                     ForEach(habits){habit in
                         HabitCardView(habit: habit)
-                        
+
                     }
                     // MARK: Add Habit Button
                     Button {
@@ -64,7 +68,7 @@ struct Home: View {
                             Image(systemName: "plus.circle")
                         }
                         .font(.callout.bold())
-                        .foregroundColor(.black)
+                        .foregroundColor(settingsVM.foregroundColor)
                     }
                     .padding(.top,15)
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
@@ -74,6 +78,7 @@ struct Home: View {
         }
         .frame(maxHeight: .infinity, alignment: .top)
         .padding()
+        .background(settingsVM.backgroundColor.ignoresSafeArea())
         .sheet(isPresented: $habitModel.addNewHabit) {
             // MARK: Стираем весь существующий контент
             habitModel.resetData()
@@ -88,7 +93,7 @@ struct Home: View {
         }
         
     }
-    
+
     // MARK: Habit Card View
     @ViewBuilder
     func HabitCardView(habit: Habit)->some View{
@@ -97,67 +102,78 @@ struct Home: View {
                 Text(habit.title ?? "")
                     .font(.callout)
                     .fontWeight(.semibold)
-                    .lineLimit(1)
-                
-                Image(systemName: "bell.badge.fill")
+                    .lineLimit(2)
+                    .foregroundColor(settingsVM.foregroundColor)
+
+                Image(systemName: habit.isRemainderOn ? "bell.fill" : "bell.slash")
                     .font(.callout)
                     .foregroundColor(Color(habit.color ?? "Card-1"))
                     .scaleEffect(0.9)
-                    .opacity(habit.isRemainderOn ? 1 : 0)
-                
+
+
                 Spacer()
+                
                 let count = (habit.weekDays?.count ?? 0)
-                Text(habitModel.pluralizedTimesPerWeek(count))
+                Text(count == 7 ? "Каждый день" : "\(count) раза в неделю ")
                     .font(.caption)
-                    .foregroundColor(.TFBG)
+                    .foregroundColor(settingsVM.foregroundColor)
             }
             .padding(.horizontal,10)
-            
+
             // MARK: Отображаем текущую неделю и помечаем активные даты привычек (с понедельника)
+            
             let calendar = Calendar.current
             let startDate = calendar.date(from: calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: Date()))!
             let weekSymbols = ["пн", "вт", "ср", "чт", "пт", "сб", "вс"]
             let activeWeekDays = habit.weekDays ?? []
-            
+
             let activePlot = weekSymbols.indices.compactMap { index -> (String, Date) in
                 let currentDate = calendar.date(byAdding: .day, value: index, to: startDate)
                 return (weekSymbols[index], currentDate!)
             }
-            
+
             HStack(spacing: 0) {
                 ForEach(activePlot.indices, id: \.self) { index in
                     let item = activePlot[index]
-                    
+
                     VStack(spacing: 6) {
                         // MARK: Сокращение названия дня
                         Text(item.0.prefix(3))
                             .font(.caption)
-                            .foregroundColor(.TFBG)
-                        
+                            .foregroundColor(settingsVM.foregroundColor)
+
                         // MARK: Проверка: выбран ли день
                         let status = activeWeekDays.contains(item.0)
-                        
+
                         Text(getDate(date: item.1))
                             .font(.system(size: 14))
                             .fontWeight(.semibold)
                             .padding(8)
-                            .frame(width: 35, height: 35)  // Размер круга 35x35
                             .background {
                                 Circle()
                                     .fill(Color(habit.color ?? "Card-1"))
                                     .opacity(status ? 1 : 0)
                             }
-                            .foregroundColor(.black)
-                            .multilineTextAlignment(.center)
-
+                            
                     }
                     .frame(maxWidth: .infinity)
                 }
             }
         }
         .padding()
-        .background(Color("Plain"), in: RoundedRectangle(cornerRadius: 10))
+        .background(
+                    settingsVM.isDarkMode ?
+                        Color(.systemGray5) :
+                        Color("Plain"),
+                    in: RoundedRectangle(cornerRadius: 10)
+                )
         
+        .overlay(
+                RoundedRectangle(cornerRadius: 10)
+                    .stroke(settingsVM.isDarkMode ? Color.white.opacity(0.05) : Color.black.opacity(0.05), lineWidth: 1)
+            )
+        
+
         .onTapGesture {
             // MARK: Редактирование привычек
             habitModel.editHabit = habit
@@ -165,8 +181,8 @@ struct Home: View {
             habitModel.addNewHabit.toggle()
         }
     }
-            
-        
+
+
     // MARK: Формат даты
     func getDate(date: Date) -> String {
         let formatter = DateFormatter()
@@ -177,22 +193,7 @@ struct Home: View {
 
 struct Home_Previews: PreviewProvider {
     static var previews: some View {
-        let settingsVM = SettingsViewModel()
-        
-        return Group {
-            Home()
-                .environmentObject(settingsVM)
-                .environment(\.managedObjectContext, PersistenceController.preview.container.viewContext)
-                .preferredColorScheme(.light)
-            
-            Home()
-                .environmentObject({
-                    let vm = SettingsViewModel()
-                    vm.isDarkMode = true
-                    return vm
-                }())
-                .environment(\.managedObjectContext, PersistenceController.preview.container.viewContext)
-                .preferredColorScheme(.dark)
-        }
+        Home()
+            .environmentObject(SettingsViewModel())
     }
 }

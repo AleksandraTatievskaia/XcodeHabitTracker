@@ -11,6 +11,7 @@ import SwiftUI
 
 struct HelpView: View {
     @Environment(\.presentationMode) var presentationMode
+    @EnvironmentObject var settingsVM: SettingsViewModel
     
     var body: some View {
         NavigationView {
@@ -20,19 +21,20 @@ struct HelpView: View {
                         VStack(alignment: .leading, spacing: 8) {
                             Text(section.title)
                                 .font(.headline)
-                                .foregroundColor(.TFBG)
+                                .foregroundColor(settingsVM.foregroundColor)
                             Text(section.content)
                                 .font(.body)
-                                .foregroundColor(.black)
+                                .foregroundColor(settingsVM.foregroundColor.opacity(0.8))
                         }
                         .padding()
-                        .background(Color.gray.opacity(0.05))
+                        .background(settingsVM.isDarkMode ? Color.white.opacity(0.1) : Color.gray.opacity(0.1))
+
                         .cornerRadius(12)
                     }
                     // 👇 Добавляем подпись
                     Text("свайпни вниз для выхода")
                         .font(.caption)
-                        .foregroundColor(.gray)
+                        .foregroundColor(settingsVM.foregroundColor.opacity(0.5))
                         .multilineTextAlignment(.center)
                         .padding(.top, 10)
                         .frame(maxWidth: .infinity)
@@ -41,6 +43,7 @@ struct HelpView: View {
             }
             .navigationTitle("Справка")
             .navigationBarTitleDisplayMode(.inline)
+            .background(settingsVM.backgroundColor.ignoresSafeArea())
             // Добавляем обработку свайпа вниз
             .gesture(
                 DragGesture(minimumDistance: 20)
@@ -56,4 +59,5 @@ struct HelpView: View {
 
 #Preview {
     HelpView()
+        .environmentObject(SettingsViewModel())
 }
